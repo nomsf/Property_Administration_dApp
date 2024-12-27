@@ -18,13 +18,17 @@ Property Administration dApp adalah aplikasi berbasis blockchain untuk mengatasi
 ![run private chain](images/run-private-chain.png)
 
 ## How to Deploy Smart Contract
-1. Gunakan command `cd smart-contract` dan `npm install` untuk melakukan instalasi dependencies.
+1. Gunakan command berikut untuk melakukan instalasi dependencies.
+```
+cd smart-contract
+npm install
+```
 2. Menjalankan Private Chain sesuai panduan di atas dan menyesuaikan konfigurasi hardhat.config.ts.
 3. Berikut contoh tampilan konfigurasi hardhat.config.ts berdasarkan Private Chain.
 
 ![hardhat configuration](images/hardhat-configuration.png)
 
-4. Gunakan command berikut untuk melakukan deployment Smart Contract
+4. Gunakan command berikut untuk melakukan deployment Smart Contract.
 ```
 npx hardhat compile
 npx hardhat run scripts/deploy.ts --network local1
