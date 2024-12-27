@@ -28,7 +28,6 @@ Property Administration dApp adalah aplikasi berbasis blockchain untuk mengatasi
 ```
 npx hardhat compile
 npx hardhat run scripts/deploy.ts --network local1
-
 ```
 5. Berikut contoh tampilan yang muncul jika Smart Contract berhasil dideploy.
 
