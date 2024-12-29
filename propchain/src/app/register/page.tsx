@@ -36,7 +36,7 @@ const RegisterPage = () => {
 
     const handleRegister = async() => {
         const property : Property = {
-            id: "",
+            id: "temp", // TODO: Generate unique ID
             name: propertyName,
             location: location,
             price: price,
@@ -47,7 +47,7 @@ const RegisterPage = () => {
 
         try {
             // Send POST request to the API
-            const response = await fetch("/api/properties", {
+            const response = await fetch("/api/register", {
               method: "POST", // HTTP Method
               headers: {
                 "Content-Type": "application/json", // Specify JSON content
@@ -110,7 +110,7 @@ const RegisterPage = () => {
                     </FormControl>
                     <Checkbox label="For sale" sx={{ gridColumn: '1/-1', my: 1 }} onChange={handleForSaleChange} />
                     <CardActions sx={{ gridColumn: '1/-1' }}>
-                    <Button variant="solid" color="primary">
+                    <Button variant="solid" color="primary" onClick={handleRegister}>
                         Apply register
                     </Button>
                     </CardActions>
