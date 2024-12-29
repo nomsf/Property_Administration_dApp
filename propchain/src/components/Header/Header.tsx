@@ -51,8 +51,8 @@ const Header = () => {
                 </MenuButton>
                 <Menu>
                     <MenuItem onClick={() => router.push("/home")}>Home</MenuItem>
-                    <MenuItem>User</MenuItem>
-                    <MenuItem>Register</MenuItem>
+                    <MenuItem onClick={() => router.push("/home")}>User</MenuItem>
+                    <MenuItem onClick={() => router.push("/register")}>Register</MenuItem>
                 </Menu>
             </Dropdown>
 

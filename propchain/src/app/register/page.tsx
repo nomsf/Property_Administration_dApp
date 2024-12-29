@@ -1,5 +1,6 @@
 "use client";
 
+import { Property } from "@/components/global.types";
 import Header from "@/components/Header/Header";
 import { Box, Button, Card, CardActions, CardContent, Checkbox, Divider, FormControl, FormLabel, Input, Typography } from "@mui/joy";
 import { useState } from "react";
@@ -9,7 +10,7 @@ import { useState } from "react";
 const RegisterPage = () => {
     const[propertyName, setPropertyName] = useState("");
     const[location, setLocation] = useState("");
-    const[price, setPrice] = useState("");
+    const[price, setPrice] = useState(0);
     const[zoning, setZoning] = useState("");
     const[forSale, setForSale] = useState(false);
 
@@ -22,7 +23,7 @@ const RegisterPage = () => {
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPrice(e.target.value);
+        setPrice(Number(e.target.value));
     };
 
     const handleZoningChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +33,39 @@ const RegisterPage = () => {
     const handleForSaleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForSale(e.target.checked);
     };
+
+    const handleRegister = async() => {
+        const property : Property = {
+            id: "",
+            name: propertyName,
+            location: location,
+            price: price,
+            zoning: zoning,
+            tenant: "", // TODO: Add tenant
+            forsale: forSale,
+          };
+
+        try {
+            // Send POST request to the API
+            const response = await fetch("/api/properties", {
+              method: "POST", // HTTP Method
+              headers: {
+                "Content-Type": "application/json", // Specify JSON content
+              },
+              body: JSON.stringify(property), // Convert property data to JSON
+            });
+        
+            // Handle API response
+            if (!response.ok) {
+              throw new Error("Failed to register property.");
+            }
+        
+            const data = await response.json(); // Parse JSON response
+            console.log("Property registered successfully:", data);
+          } catch (error) {
+            console.error("Error registering property:", error);
+          }
+    }
     
     return (
         <Box sx={{width: 1, height: 1}}>
@@ -41,9 +75,8 @@ const RegisterPage = () => {
                 variant="outlined"
                 sx={{
                     maxHeight: 'max-content',
-                    maxWidth: '100%',
+                    maxWidth: 600,
                     mx: 'auto',
-                    // to make the demo resizable
                     overflow: 'auto',
                     resize: 'horizontal',
                 }}
