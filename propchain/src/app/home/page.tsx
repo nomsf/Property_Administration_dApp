@@ -10,73 +10,67 @@ export default function HomePage() {
 
   const proptemp: PropertycardProps[] = [
     {
+      name: "123 Main St",
+      zoning: "Flat",
       location: "123 Main St, Springfield, IL, 62701",
-      type: "Flat",
-      valuation: [5000, 100000, 200000]
+      price: 100000
     },
     {
-      location: "123 Main St, Springfield, IL, 62701",
-      type: "Land",
-      valuation: [5000, 100000, 200000]
+      name: "456 Elm St",
+      zoning: "Residential",
+      location: "456 Elm St, Springfield, IL, 62702",
+      price: 150000
     },
     {
-      location: "333 Second St, Sheffield, AD, 433212",
-      type: "House",
-      valuation: [5000, 100000, 200000]
+      name: "789 Oak St",
+      zoning: "Commercial",
+      location: "789 Oak St, Springfield, IL, 62703",
+      price: 200000
+    },
+    {
+      name: "101 Pine St",
+      zoning: "Industrial",
+      location: "101 Pine St, Springfield, IL, 62704",
+      price: 250000
+    },
+    {
+      name: "202 Maple St",
+      zoning: "Agricultural",
+      location: "202 Maple St, Springfield, IL, 62705",
+      price: 300000
+    },
+    {
+      name: "303 Birch St",
+      zoning: "Mixed-Use",
+      location: "303 Birch St, Springfield, IL, 62706",
+      price: 350000
+    },
+    {
+      name: "404 Cedar St",
+      zoning: "Flat",
+      location: "404 Cedar St, Springfield, IL, 62707",
+      price: 400000
+    },
+    {
+      name: "505 Walnut St",
+      zoning: "Residential",
+      location: "505 Walnut St, Springfield, IL, 62708",
+      price: 450000
+    },
+    {
+      name: "606 Ash St",
+      zoning: "Commercial",
+      location: "606 Ash St, Springfield, IL, 62709",
+      price: 500000
+    },
+    {
+      name: "707 Cherry St",
+      zoning: "Industrial",
+      location: "707 Cherry St, Springfield, IL, 62710",
+      price: 550000
     }
-  ]
-  proptemp.push(
-    {
-      location: "444 Fourth St, Metropolis, NY, 10001",
-      type: "Condo",
-      valuation: [6000, 110000, 210000]
-    },
-    {
-      location: "555 Fifth St, Gotham, NJ, 07001",
-      type: "Apartment",
-      valuation: [7000, 120000, 220000]
-    },
-    {
-      location: "666 Sixth St, Star City, CA, 90001",
-      type: "Villa",
-      valuation: [8000, 130000, 230000]
-    },
-    {
-      location: "777 Seventh St, Central City, CO, 80001",
-      type: "Cottage",
-      valuation: [9000, 140000, 240000]
-    },
-    {
-      location: "888 Eighth St, Coast City, FL, 33001",
-      type: "Bungalow",
-      valuation: [10000, 150000, 250000]
-    },
-    {
-      location: "999 Ninth St, Smallville, KS, 66001",
-      type: "Mansion",
-      valuation: [11000, 160000, 260000]
-    },
-    {
-      location: "1010 Tenth St, Atlantis, GA, 30001",
-      type: "Farmhouse",
-      valuation: [12000, 170000, 270000]
-    },
-    {
-      location: "1111 Eleventh St, Wakanda, IL, 62702",
-      type: "Penthouse",
-      valuation: [13000, 180000, 280000]
-    },
-    {
-      location: "1212 Twelfth St, Asgard, TX, 75001",
-      type: "Townhouse",
-      valuation: [14000, 190000, 290000]
-    },
-    {
-      location: "1313 Thirteenth St, Themyscira, WA, 98001",
-      type: "Duplex",
-      valuation: [15000, 200000, 300000]
-    }
-  );
+  ];
+  
 
   const [properties, setProperties] = useState<PropertycardProps[]>(proptemp);
 

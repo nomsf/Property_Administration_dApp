@@ -1,5 +1,6 @@
 export interface PropertycardProps {
+    name: string;
+    zoning: string;
     location: string;
-    type: string;
-    valuation: number[];
+    price: number;
 }

@@ -1,9 +1,10 @@
 
 export interface Property{
     id: string;
+    name: string;
     location: string;
-    type: string;
-    description: string;
-    area: number;
-    valuation: number[];
+    zoning: string;
+    price: number;
+    tenant: string;
+    forsale: boolean;
 }

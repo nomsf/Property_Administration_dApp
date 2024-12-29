@@ -50,9 +50,9 @@ const Header = () => {
                     />
                 </MenuButton>
                 <Menu>
-                    <MenuItem >Home</MenuItem>
+                    <MenuItem onClick={() => router.push("/home")}>Home</MenuItem>
                     <MenuItem>User</MenuItem>
-                    <MenuItem>Ownership</MenuItem>
+                    <MenuItem>Register</MenuItem>
                 </Menu>
             </Dropdown>
 

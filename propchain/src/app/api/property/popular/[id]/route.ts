@@ -1,22 +1,25 @@
+import { Property } from '@/components/global.types';
 import { NextResponse } from 'next/server';
 
 // Mock data
-const properties = [
+const properties: Property[] = [
   {
     id: '1',
+    name: 'Property One',
     location: '333 Second St, Sheffield, AD, 433212',
-    type: 'Flat',
-    description: 'Yosemite National Park is a national park spanning 747,956 acres (1,169.4 sq mi; 3,025.2 km2) in the western Sierra Nevada of Central California.',
-    area: 100,
-    valuation: [100000, 200000, 300000]
+    zoning: 'Residential',
+    price: 100000,
+    tenant: 'John Doe',
+    forsale: true
   },
   {
     id: '2',
+    name: 'Property Two',
     location: '123 Second St, Sheffield, AD, 433212',
-    type: 'House',
-    description: 'Yosemite National Park is a national park spanning 747,956 acres (1,169.4 sq mi; 3,025.2 km2) in the western Sierra Nevada of Central California.',
-    area: 200,
-    valuation: [200000, 300000, 400000]
+    zoning: 'Commercial',
+    price: 200000,
+    tenant: 'Jane Smith',
+    forsale: false
   }
 ];
 

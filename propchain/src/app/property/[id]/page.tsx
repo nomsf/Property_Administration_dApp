@@ -58,29 +58,29 @@ const PropertyPage = () => {
             </Box> */}
             <Box sx={{display:"flex", justifyContent: "center"}} variant="outlined" m={2}>
                 <Grid container spacing={2} sx={{p: 2, pt:10, maxWidth: 3/4}}>
-                    <Grid size={6} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
+                    <Grid size={12} mb={4} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
                         <Typography level="h1" fontSize="2xl" fontWeight="xl" sx={{color:"#ffffff"}}>
-                            {property.type}
+                            {property.name}
+                        </Typography>
+                    </Grid>
+                    <Grid size={6} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
+                        <Typography level="h1" fontSize="2xl" fontWeight="md" sx={{color:"#ffffff"}}>
+                            {property.zoning}
                         </Typography>
                     </Grid>
                     <Grid size={6} pl={10} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
                         <Typography level="h2" fontSize="xl" sx={{color: "#8dadf7"}}>
-                            Rp{property.valuation.slice(-1)[0]}
-                        </Typography>
-                    </Grid>
-                    <Grid size={12} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
-                        <Typography noWrap={false} level="h2" fontSize="lg" fontWeight="lg" sx={{color:"#ffffff"}}>
-                            {property.location}
+                            Rp{property.price}
                         </Typography>
                     </Grid>
                     <Grid size={12} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
                         <Typography level="body-lg" fontSize="md" sx={{textAlign:"start",color:"#ffffff", borderTop: "1px solid #ffffff", borderBottom:"1px solid #ffffff", pr: 2, py: 1}}>
-                            {property.description}
+                            {property.location}
                         </Typography>
                     </Grid>
                     <Grid size={12} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
                         <Typography level="title-lg" fontSize="xl" sx={{textAlign:"start",color:"#ffffff"}}>
-                            {property.area} m2
+                            Owner: {property.tenant}
                         </Typography>
                     </Grid>
                     <Grid size={12} sx={{display:"flex", justifyContent: "center", alignItems: "center"}}>
