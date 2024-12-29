@@ -4,6 +4,7 @@ import { Box, Button, CssBaseline, Drawer, Dropdown, Input, List, ListItem, List
 import Image from "next/image";
 import { useState } from "react";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
+import { useRouter } from "next/navigation";
 
 const theme = createTheme({
     palette: {
@@ -16,6 +17,7 @@ const theme = createTheme({
 
 const Header = () => {
     const [open, setOpen] = useState(false);
+    const router = useRouter();
 
     return (
         <Stack
@@ -48,7 +50,7 @@ const Header = () => {
                     />
                 </MenuButton>
                 <Menu>
-                    <MenuItem>Home</MenuItem>
+                    <MenuItem >Home</MenuItem>
                     <MenuItem>User</MenuItem>
                     <MenuItem>Ownership</MenuItem>
                 </Menu>
