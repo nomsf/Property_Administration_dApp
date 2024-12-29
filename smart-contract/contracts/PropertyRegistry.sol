@@ -3,8 +3,9 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract PropertyRegistry is ERC721, Ownable {
+contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
     struct Property {
         string name;
         string location;
@@ -33,7 +34,7 @@ contract PropertyRegistry is ERC721, Ownable {
         emit PropertyRegistered(propertyId, name, location, price, zoning);
     }
 
-    function transferProperty(uint256 propertyId, address newOwner) public payable {
+    function transferProperty(uint256 propertyId, address newOwner) public payable nonReentrant {
         require(ownerOf(propertyId) == msg.sender, "Only the owner can transfer the property");
         require(properties[propertyId].forSale, "Property is not for sale");
         require(msg.value >= properties[propertyId].price, "Insufficient payment");
