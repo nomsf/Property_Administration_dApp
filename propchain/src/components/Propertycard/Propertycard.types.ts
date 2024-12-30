@@ -1,6 +1,7 @@
 export interface PropertycardProps {
+    id: string;
     name: string;
-    zoning: string;
     location: string;
     price: number;
+    zoning: string;
 }

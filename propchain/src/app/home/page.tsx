@@ -51,6 +51,7 @@ export default function HomePage() {
       for (let i = 0; i < propertyCount; i++) {
         const property = await contract.properties(i);
         loadedProperties.push({
+          id: i.toString(),
           name: property.name,
           location: property.location,
           zoning: property.zoning,

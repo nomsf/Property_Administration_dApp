@@ -53,24 +53,27 @@ const RegisterPage = () => {
       toast.error("Please fill in all fields.");
       return;
     }
-
+  
     if (!isGovernmentAccount) {
       toast.error("Unauthorized! Only the Government account can register properties.");
       return;
     }
-
+  
     try {
       setLoading(true);
 
       const provider = new ethers.BrowserProvider(window.ethereum!);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, PropertyRegistryABI.abi, signer);
-
+  
       const priceInWei = ethers.parseUnits(price.toString(), "ether");
       const tx = await contract.registerProperty(propertyName, location, priceInWei, zoning, propertyOwner);
-
+  
+      const txHash = tx.hash;
+      toast.info(`Transaction sent! Tx Hash: ${txHash}`);
+  
       const receipt = await tx.wait();
-      toast.success(receipt);
+      toast.success(`Property registered successfully! Block: ${receipt.blockNumber}`);
     } catch (error) {
       console.error("Error registering property:", error);
       toast.error("Failed to register property. Check the console for details.");
