@@ -3,85 +3,117 @@
 import Header from "@/components/Header/Header";
 import Propertycard from "@/components/Propertycard/Propertycard";
 import { PropertycardProps } from "@/components/Propertycard/Propertycard.types";
-import { Box, Stack } from "@mui/joy";
-import { useState } from "react";
+import { Box, Button, Stack, Typography } from "@mui/joy";
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import PropertyRegistryABI from "../../../../smart-contract/artifacts/contracts/PropertyRegistry.sol/PropertyRegistry.json";
+import { toast } from "react-toastify";
+
+const CONTRACT_ADDRESS = "0x63e6DDE6763C3466C7b45Be880f7eE5dC2ca3E25";
 
 export default function HomePage() {
+  const [properties, setProperties] = useState<PropertycardProps[]>([]);
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const proptemp: PropertycardProps[] = [
-    {
-      name: "123 Main St",
-      zoning: "Flat",
-      location: "123 Main St, Springfield, IL, 62701",
-      price: 100000
-    },
-    {
-      name: "456 Elm St",
-      zoning: "Residential",
-      location: "456 Elm St, Springfield, IL, 62702",
-      price: 150000
-    },
-    {
-      name: "789 Oak St",
-      zoning: "Commercial",
-      location: "789 Oak St, Springfield, IL, 62703",
-      price: 200000
-    },
-    {
-      name: "101 Pine St",
-      zoning: "Industrial",
-      location: "101 Pine St, Springfield, IL, 62704",
-      price: 250000
-    },
-    {
-      name: "202 Maple St",
-      zoning: "Agricultural",
-      location: "202 Maple St, Springfield, IL, 62705",
-      price: 300000
-    },
-    {
-      name: "303 Birch St",
-      zoning: "Mixed-Use",
-      location: "303 Birch St, Springfield, IL, 62706",
-      price: 350000
-    },
-    {
-      name: "404 Cedar St",
-      zoning: "Flat",
-      location: "404 Cedar St, Springfield, IL, 62707",
-      price: 400000
-    },
-    {
-      name: "505 Walnut St",
-      zoning: "Residential",
-      location: "505 Walnut St, Springfield, IL, 62708",
-      price: 450000
-    },
-    {
-      name: "606 Ash St",
-      zoning: "Commercial",
-      location: "606 Ash St, Springfield, IL, 62709",
-      price: 500000
-    },
-    {
-      name: "707 Cherry St",
-      zoning: "Industrial",
-      location: "707 Cherry St, Springfield, IL, 62710",
-      price: 550000
+  const initializeContract = async () => {
+    if (typeof window.ethereum === "undefined") {
+      toast.error("MetaMask is not installed!");
+      return;
     }
-  ];
-  
 
-  const [properties, setProperties] = useState<PropertycardProps[]>(proptemp);
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum!);
+      const signer = await provider.getSigner();
+      const contractInstance = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        PropertyRegistryABI.abi,
+        signer
+      );
+
+      setContract(contractInstance);
+    } catch (error) {
+      console.error("Error initializing contract:", error);
+      toast.error("Error initializing contract. Please check the console for more details.");
+    }
+  };
+
+  const fetchProperties = async () => {
+    if (!contract) {
+      toast.error("Contract not initialized!");
+      return;
+    }
+
+    try {
+      const propertyCount = await contract.nextPropertyId();
+      const loadedProperties: PropertycardProps[] = [];
+
+      for (let i = 0; i < propertyCount; i++) {
+        const property = await contract.properties(i);
+        loadedProperties.push({
+          name: property.name,
+          location: property.location,
+          zoning: property.zoning,
+          price: parseFloat(ethers.formatEther(property.price)),
+        });
+      }
+
+      setProperties(loadedProperties);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      toast.error("Error fetching properties. Please check the console for more details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    initializeContract();
+  }, []);
+
+  useEffect(() => {
+    if (contract) {
+      fetchProperties();
+    }
+  }, [contract]);
 
   return (
-    <Box sx={{width: 1, height: 1}}>
+    <Box sx={{ width: 1, height: 1 }}>
       <Header />
-      <Stack spacing={2} pt={4} mb={10} sx={{justifyContent: "center", alignItems: "center"}}>
-        {properties.map((property, index) => (
-            <Propertycard key={index} {...property} />
-          ))}
-      </Stack>
+      {loading ? (
+        <Typography
+          level="h4"
+          fontWeight="bold"
+          textColor="#ededed"
+          sx={{ textAlign: "center", mt: 4 }}
+        >
+          Loading properties...
+        </Typography>
+      ) : (
+        <Stack spacing={2} pt={4} mb={10} sx={{ justifyContent: "center", alignItems: "center" }}>
+          {properties.length > 0 ? (
+            properties.map((property, index) => (
+              <Propertycard key={index} {...property} />
+            ))
+          ) : (
+            <Typography
+              level="h4"
+              fontWeight="bold"
+              textColor="#ededed"
+              sx={{ textAlign: "center", mt: 4 }}
+            >
+              No properties found on the blockchain.
+            </Typography>
+          )}
+        </Stack>
+      )}
+      <Button
+        color="primary"
+        onClick={fetchProperties}
+        sx={{ display: "block", mx: "auto", mt: 4 }}
+      >
+        Refresh Properties
+      </Button>
     </Box>
   );
 }

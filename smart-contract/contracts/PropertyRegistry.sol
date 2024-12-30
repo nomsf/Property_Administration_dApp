@@ -11,7 +11,6 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         string location;
         uint256 price;
         string zoning;
-        address tenant;
         bool forSale;
     }
 
@@ -26,32 +25,47 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         require(initialOwner != address(0), "Owner address cannot be zero");
     }
 
-    function registerProperty(string memory name, string memory location, uint256 price, string memory zoning) public onlyOwner {
+    function registerProperty(
+        string memory name,
+        string memory location,
+        uint256 price,
+        string memory zoning,
+        address propertyOwner
+    ) public onlyOwner {
+        require(propertyOwner != address(0), "Invalid property owner address");
+
         uint256 propertyId = nextPropertyId++;
-        properties[propertyId] = Property(name, location, price, zoning, address(0), false);
-        _mint(msg.sender, propertyId);
+        properties[propertyId] = Property(name, location, price, zoning, false);
+        _mint(propertyOwner, propertyId);
 
         emit PropertyRegistered(propertyId, name, location, price, zoning);
     }
 
-    function transferProperty(uint256 propertyId, address newOwner) public payable nonReentrant {
-        require(ownerOf(propertyId) == msg.sender, "Only the owner can transfer the property");
+    function updatePropertyForSale(uint256 propertyId, bool isForSale) public {
+        require(ownerOf(propertyId) != address(0), "Property does not exist");
+        require(ownerOf(propertyId) == msg.sender, "Only the property owner can update the sale status");
+
+        properties[propertyId].forSale = isForSale;
+
+        emit PropertyUpdated(propertyId, "forSale");
+    }
+
+    function buyProperty(uint256 propertyId) public payable nonReentrant {
         require(properties[propertyId].forSale, "Property is not for sale");
         require(msg.value >= properties[propertyId].price, "Insufficient payment");
 
         address oldOwner = ownerOf(propertyId);
+        address newOwner = msg.sender;
+
+        require(oldOwner != address(0), "Invalid property owner");
+        require(newOwner != oldOwner, "Buyer is already the owner");
+
         _transfer(oldOwner, newOwner, propertyId);
+
         properties[propertyId].forSale = false;
 
         payable(oldOwner).transfer(msg.value);
 
         emit PropertyTransferred(propertyId, oldOwner, newOwner, msg.value);
-    }
-
-    function updatePropertyForSale(uint256 propertyId, bool isForSale) public onlyOwner {
-        require(ownerOf(propertyId) == msg.sender, "Only the owner can update the sale status");
-        properties[propertyId].forSale = isForSale;
-
-        emit PropertyUpdated(propertyId, "forSale");
     }
 }

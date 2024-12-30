@@ -21,7 +21,7 @@ const Propertycard: React.FC<PropertycardProps> = ({ name, location, zoning, pri
             <CardOverflow variant="soft">
                 <Divider inset="context"/>
                 <Typography level="body-md" py={1}>
-                    {price}
+                    {price} ETH
                 </Typography>
             </CardOverflow>
         </Card>
