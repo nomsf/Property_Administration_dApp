@@ -1,110 +1,114 @@
-// // SPDX-License-Identifier: UNLICENSED
-// pragma solidity ^0.8.28;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
 
-// contract Oracle {
-//   Request[] requests; //list of requests made to the contract
-//   uint currentId = 0; //increasing request id
-//   uint minQuorum = 2; //minimum number of responses to receive before declaring final result
-//   uint totalOracleCount = 3; // Hardcoded oracle count
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-//   // defines a general api request
-//   struct Request {
-//     uint id;                            //request id
-//     string urlToQuery;                  //API url
-//     string attributeToFetch;            //json attribute (key) to retrieve in the response
-//     string agreedValue;                 //value from key
-//     mapping(uint => string) anwers;     //answers provided by the oracles
-//     mapping(address => uint) quorum;    //oracles which will query the answer (1=oracle hasn't voted, 2=oracle has voted)
-//   }
+contract Oracle is Ownable {
+    // Add new job type for addition
+    bytes32 public constant CALCULATE_PROPERTY_TAX = keccak256("CALCULATE_PROPERTY_TAX");
+    
+    struct OracleRequest {
+        address requester;
+        bytes32 jobId;
+        bool fulfilled;
+        uint256 timestamp;
+        uint256 payment;
+        // parameters for tax calculation
+        uint256 building_area;
+        uint256 land_area;
+        uint256 building_price_per_m2;
+        uint256 land_price_per_m2;
+    }
 
-//   //event that triggers oracle outside of the blockchain
-//   event NewRequest (
-//     uint id,
-//     string urlToQuery,
-//     string attributeToFetch
-//   );
+    // Events
+    event RequestCreated(
+        bytes32 indexed requestId, 
+        address indexed requester, 
+        bytes32 jobId,
+        uint256 building_area,
+        uint256 land_area,
+        uint256 building_price_per_m2,
+        uint256 land_price_per_m2
+    );
+    event DataFulfilled(bytes32 indexed requestId, uint256 result);
 
-//   //triggered when there's a consensus on the final result
-//   event UpdatedRequest (
-//     uint id,
-//     string urlToQuery,
-//     string attributeToFetch,
-//     string agreedValue
-//   );
+    // State variables
+    mapping(bytes32 => OracleRequest) public requests;
+    mapping(address => bool) public authorizedNodes;
+    mapping(bytes32 => string) public jobDescriptions;
+    uint256 public fee;
+    
+    constructor(uint256 _fee, address initialOwner) Ownable(initialOwner){
+        fee = _fee;
+        jobDescriptions[CALCULATE_PROPERTY_TAX] = "Calculate property tax based on provided information (building area, land area, building price per m^2, land price per m^2)";
+    }
 
-//   function createRequest (
-//     string memory _urlToQuery,
-//     string memory _attributeToFetch
-//   )
-//   public
-//   {
-//     uint lenght = requests.push(Request(currentId, _urlToQuery, _attributeToFetch, ""));
-//     Request storage r = requests[lenght-1];
+    // Request tax calculation
+    function requestTaxCalculation(uint256 building_area, uint256 land_area, uint256 building_price_per_m2, uint256 land_price_per_m2) external payable returns (bytes32) {
+        require(msg.value >= fee, "Insufficient payment");
+        
+        bytes32 requestId = keccak256(
+            abi.encodePacked(block.timestamp, msg.sender, CALCULATE_PROPERTY_TAX, building_area, land_area, building_price_per_m2, land_price_per_m2)
+        );
+        
+        requests[requestId] = OracleRequest({
+            requester: msg.sender,
+            jobId: CALCULATE_PROPERTY_TAX,
+            fulfilled: false,
+            timestamp: block.timestamp,
+            payment: msg.value,
+            building_area: building_area,
+            land_area: land_area,
+            building_price_per_m2: building_price_per_m2,
+            land_price_per_m2: land_price_per_m2
+        });
 
-//     // Hardcoded oracles address
-//     r.quorum[address(0x6c2339b46F41a06f09CA0051ddAD54D1e582bA77)] = 1;
-//     r.quorum[address(0xb5346CF224c02186606e5f89EACC21eC25398077)] = 1;
-//     r.quorum[address(0xa2997F1CA363D11a0a35bB1Ac0Ff7849bc13e914)] = 1;
+        emit RequestCreated(requestId, msg.sender, CALCULATE_PROPERTY_TAX, building_area, land_area, building_price_per_m2, land_price_per_m2);
+        return requestId;
+    }
 
-//     // launch an event to be detected by oracle outside of blockchain
-//     emit NewRequest (
-//       currentId,
-//       _urlToQuery,
-//       _attributeToFetch
-//     );
+    // Get request details
+    function getRequest(bytes32 requestId) external view returns (
+        address requester,
+        bytes32 jobId,
+        bool fulfilled,
+        uint256 timestamp,
+        uint256 building_area,
+        uint256 land_area,
+        uint256 building_price_per_m2,
+        uint256 land_price_per_m2
+    ) {
+        OracleRequest memory request = requests[requestId];
+        return (
+            request.requester,
+            request.jobId,
+            request.fulfilled,
+            request.timestamp,
+            request.building_area,
+            request.land_area,
+            request.building_price_per_m2,
+            request.land_price_per_m2
+        );
+    }
 
-//     // increase request id
-//     currentId++;
-//   }
+    // Fulfill oracle request with data
+    function fulfillRequest(bytes32 requestId, uint256 result) external {
+        require(authorizedNodes[msg.sender], "Not authorized");
+        require(!requests[requestId].fulfilled, "Already fulfilled");
+        
+        requests[requestId].fulfilled = true;
+        emit DataFulfilled(requestId, result);
+        
+        payable(msg.sender).transfer(requests[requestId].payment);
+    }
 
-//   //called by the oracle to record its answer
-//   function updateRequest (
-//     uint _id,
-//     string memory _valueRetrieved
-//   ) public {
+    // Authorize oracle nodes
+    function authorizeNode(address node) external onlyOwner {
+        authorizedNodes[node] = true;
+    }
 
-//     Request storage currRequest = requests[_id];
-
-//     //check if oracle is in the list of trusted oracles
-//     //and if the oracle hasn't voted yet
-//     if(currRequest.quorum[address(msg.sender)] == 1){
-
-//       //marking that this address has voted
-//       currRequest.quorum[msg.sender] = 2;
-
-//       //iterate through "array" of answers until a position if free and save the retrieved value
-//       uint tmpI = 0;
-//       bool found = false;
-//       while(!found) {
-//         //find first empty slot
-//         if(bytes(currRequest.anwers[tmpI]).length == 0){
-//           found = true;
-//           currRequest.anwers[tmpI] = _valueRetrieved;
-//         }
-//         tmpI++;
-//       }
-
-//       uint currentQuorum = 0;
-
-//       //iterate through oracle list and check if enough oracles(minimum quorum)
-//       //have voted the same answer has the current one
-//       for(uint i = 0; i < totalOracleCount; i++){
-//         bytes memory a = bytes(currRequest.anwers[i]);
-//         bytes memory b = bytes(_valueRetrieved);
-
-//         if(keccak256(a) == keccak256(b)){
-//           currentQuorum++;
-//           if(currentQuorum >= minQuorum){
-//             currRequest.agreedValue = _valueRetrieved;
-//             emit UpdatedRequest (
-//               currRequest.id,
-//               currRequest.urlToQuery,
-//               currRequest.attributeToFetch,
-//               currRequest.agreedValue
-//             );
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
+    // Revoke node authorization
+    function revokeNode(address node) external onlyOwner {
+        authorizedNodes[node] = false;
+    }
+}

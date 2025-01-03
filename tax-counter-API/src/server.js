@@ -2,14 +2,13 @@ const express = require('express');
 const morgan = require('morgan');
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Middleware for logging incoming request
 app.use(morgan('combined'))
 
 // Middleware to parse JSON requests
 app.use(express.json());
-
 
 // Test route for get example
 app.get('/', (req, res)=> {
@@ -18,9 +17,10 @@ app.get('/', (req, res)=> {
 
 // Route to calculate the sum of two numbers
 app.post('/tax_count', (req, res) => {
-  const { luas_bangunan, luas_tanah, harga_bangunan, harga_tanah } = req.query;
+  const { luas_bangunan, luas_tanah, harga_bangunan, harga_tanah } = req.body;
   const isConvertible = !isNaN(Number(luas_bangunan)) && !isNaN(Number(luas_tanah)) && !isNaN(Number(harga_bangunan)) && !isNaN(Number(harga_tanah))
-  
+  console.log(luas_bangunan, luas_tanah, harga_bangunan, harga_tanah);
+
   // Validate inputs
   if (!isConvertible) {
     return res.status(400).json({ error: 'All request parameters must be numbers' });
@@ -39,6 +39,8 @@ app.post('/tax_count', (req, res) => {
   }else{
     harga_akhir = 0.2 * harga_total * pajak    
   }
+
+  console.log(harga_akhir);
   return res.json({ harga_akhir });
 });
 
