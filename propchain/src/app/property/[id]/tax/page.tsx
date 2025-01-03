@@ -52,17 +52,12 @@ const TaxCalculationPage = () => {
 
       setCalculatedTax(null);
 
-      const result = await new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => {
-              reject(new Error("Timeout waiting for result"));
-          }, 30000);
-
-          oracleContract.once("DataFulfilled", (fulfilledRequestId, result) => {
-              if (fulfilledRequestId === id) {
-                  clearTimeout(timeout);
-                  resolve(result);
-              }
-          });
+      oracleContract.on("DataFulfilled", (requestId, result) => {
+        if (requestId === id) {
+          console.log("Tax Calculation Result from Oracle:", result);
+          setCalculatedTax(result.toNumber());
+          toast.success("Tax calculated successfully!");
+        }
       });
 
       let tx;

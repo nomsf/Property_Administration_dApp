@@ -5,7 +5,7 @@ dotenv.config();
 
 async function main() {
     // Oracle contract address from deployment
-    const ORACLE_ADDRESS = "0x4952bE6a8033519456197bdf5B5a8a6189621F17";
+    const ORACLE_ADDRESS = "0x0643D39D47CF0ea95Dbea69Bf11a7F8C4Bc34968";
     
     if (!ORACLE_ADDRESS) {
         throw new Error('Please set ORACLE_ADDRESS in your .env file');
