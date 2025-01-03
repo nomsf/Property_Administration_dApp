@@ -5,6 +5,22 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+interface IOracle {
+    function requestPBBCalculation(
+        uint256 building_area,
+        uint256 land_area,
+        uint256 building_price_per_m2,
+        uint256 land_price_per_m2
+    ) external payable returns (bytes32);
+
+    function requestPPNCalculation(
+        uint256 building_area,
+        uint256 land_area,
+        uint256 building_price_per_m2,
+        uint256 land_price_per_m2
+    ) external payable returns (bytes32);
+}
+
 contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
     struct Property {
         uint256 price;
@@ -16,6 +32,7 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
 
     uint256 public nextPropertyId;
     mapping(uint256 => Property) public properties;
+    IOracle public oracle;
 
     event PropertyRegistered(uint256 indexed propertyId, uint256 price, string name, string location, string zoning);
     event PropertyUpdated(uint256 indexed propertyId, string updatedField);
@@ -24,8 +41,11 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
     string public constant TOKEN_NAME = "PropertyToken";
     string public constant TOKEN_SYMBOL = "PT";
 
-    constructor(address contractOwner) ERC721(TOKEN_NAME, TOKEN_SYMBOL) Ownable(contractOwner) {
+    constructor(address contractOwner, address oracleAddress) ERC721(TOKEN_NAME, TOKEN_SYMBOL) Ownable(contractOwner) {
         require(contractOwner != address(0), "Invalid contract owner address");
+        require(oracleAddress != address(0), "Invalid oracle address");
+
+        oracle = IOracle(oracleAddress);
     }
 
     function isPropertyOwner(uint256 propertyId, address account) public view returns (bool) {
@@ -36,17 +56,20 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         return properties[propertyId].forSale;
     }
 
-    function registerProperty(address propertyOwner, uint256 price, string memory name, string memory location, string memory zoning) public onlyOwner {
+    function registerProperty(
+        address propertyOwner,
+        uint256 price,
+        string memory name,
+        string memory location,
+        string memory zoning
+    ) public onlyOwner {
         require(propertyOwner != address(0), "Invalid property owner address");
         require(price > 0, "Property price must be greater than zero");
         require(bytes(name).length > 0, "Property name is required");
         require(bytes(location).length > 0, "Property location is required");
         require(bytes(zoning).length > 0, "Property zoning is required");
 
-        uint256 propertyId;
-        unchecked {
-            propertyId = nextPropertyId++;
-        }
+        uint256 propertyId = nextPropertyId++;
         properties[propertyId] = Property(price, false, name, location, zoning);
         _mint(propertyOwner, propertyId);
 
@@ -58,7 +81,6 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         require(ownerOf(propertyId) == msg.sender, "Only property owner can update property price");
 
         properties[propertyId].price = newPrice;
-
         emit PropertyUpdated(propertyId, "price");
     }
 
@@ -68,7 +90,6 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         require(properties[propertyId].price > 0, "Property price must be greater than zero");
 
         properties[propertyId].forSale = forSale;
-
         emit PropertyUpdated(propertyId, "forSale");
     }
 
@@ -78,7 +99,6 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         require(bytes(newName).length > 0, "Property name is required");
 
         properties[propertyId].name = newName;
-
         emit PropertyUpdated(propertyId, "name");
     }
 
@@ -100,5 +120,41 @@ contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
         require(success, "Payment transfer failed");
 
         emit PropertyAcquired(propertyId, oldPropertyOwner, newPropertyOwner, msg.value);
+    }
+
+    function requestPBBTaxCalculation(
+        uint256 propertyId,
+        uint256 building_area,
+        uint256 land_area,
+        uint256 building_price_per_m2,
+        uint256 land_price_per_m2
+    ) external payable {
+        require(ownerOf(propertyId) == msg.sender, "Only property owner can request tax calculation");
+        require(properties[propertyId].price > 0, "Property price must be greater than zero");
+
+        oracle.requestPBBCalculation{value: msg.value}(
+            building_area,
+            land_area,
+            building_price_per_m2,
+            land_price_per_m2
+        );
+    }
+
+    function requestPPNTaxCalculation(
+        uint256 propertyId,
+        uint256 building_area,
+        uint256 land_area,
+        uint256 building_price_per_m2,
+        uint256 land_price_per_m2
+    ) external payable {
+        require(ownerOf(propertyId) == msg.sender, "Only property owner can request tax calculation");
+        require(properties[propertyId].price > 0, "Property price must be greater than zero");
+
+        oracle.requestPPNCalculation{value: msg.value}(
+            building_area,
+            land_area,
+            building_price_per_m2,
+            land_price_per_m2
+        );
     }
 }

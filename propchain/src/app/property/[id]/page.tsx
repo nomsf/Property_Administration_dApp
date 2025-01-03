@@ -3,16 +3,17 @@
 import { Property } from "@/components/global.types";
 import Header from "@/components/Header/Header";
 import { Box, Button, Grid, Typography } from "@mui/joy";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import PropertyRegistryABI from "../../../../../smart-contract/artifacts/contracts/PropertyRegistry.sol/PropertyRegistry.json";
 import { toast } from "react-toastify";
 
-const CONTRACT_ADDRESS = "0x17435ccE3d1B4fA2e5f8A08eD921D57C6762A180";
+const CONTRACT_ADDRESS = "0x9f5eaC3d8e082f47631F1551F1343F23cd427162";
 
 const PropertyPage = () => {
     const { id } = useParams();
+    const router = useRouter();
     const [property, setProperty] = useState<Property | null>(null);
     const [isOwner, setIsOwner] = useState<boolean>(false);
     const [forSale, setForSale] = useState<boolean>(false);
@@ -168,11 +169,18 @@ const PropertyPage = () => {
                         </Typography>
                     </Grid>
                     {isOwner ? (
-                        <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                            <Button color="neutral" onClick={toggleForSale}>
-                                {forSale ? "Remove from Sale" : "Mark for Sale"}
-                            </Button>
-                        </Grid>
+                        <>
+                            <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                <Button color="neutral" onClick={toggleForSale}>
+                                    {forSale ? "Remove from Sale" : "Mark for Sale"}
+                                </Button>
+                            </Grid>
+                            <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
+                                <Button color="neutral" onClick={() => router.push(`/property/${id}/tax`)}>
+                                    Go to Tax Page
+                                </Button>
+                            </Grid>
+                        </>
                     ) : (
                         forSale && (
                             <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>

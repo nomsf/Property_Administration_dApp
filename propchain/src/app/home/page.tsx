@@ -9,7 +9,7 @@ import { ethers } from "ethers";
 import PropertyRegistryABI from "../../../../smart-contract/artifacts/contracts/PropertyRegistry.sol/PropertyRegistry.json";
 import { toast } from "react-toastify";
 
-const CONTRACT_ADDRESS = "0x17435ccE3d1B4fA2e5f8A08eD921D57C6762A180";
+const CONTRACT_ADDRESS = "0x9f5eaC3d8e082f47631F1551F1343F23cd427162";
 
 export default function HomePage() {
   const [properties, setProperties] = useState<PropertycardProps[]>([]);
