@@ -38,5 +38,28 @@ npx hardhat run scripts/deploy-property-registry.ts --network local1
 ![deploy smart contract](images/deploy-smart-contract.png)
 
 ## How to Deploy and Integrate Oracle
+Pastikan anda berada pada direktori `<root>/smart-contract`, kemudian ikuti langkah berikut.
+1. Gunakan command berikut untuk melakukan deployment Smart Contract Oracle.
+```
+npx hardhat run scripts/deploy-oracle.ts --network local1
+```
+2. Gunakan command berikut untuk menjalankan off-chain oracle node.
+```
+npx hardhat run scripts/run-oracle-node.ts --network local1
+```
+3. Berikut contoh tampilan yang muncul jika Oracle berhasil di deploy.
+
+![deploy oracle](images/deploy-oracle-smart-contract.png)
+
+4. Berikut contoh tampilan yang muncul jika Oracle Node berhasil dijalankan.
+
+![oracle node running](images/oracle-node-running.png)
+
+## How to Run External API
+Pastikan anda berada pada direktori `<root>/tax-counter-API`, selanjutnya jalankan command berikut.
+```
+npm run dev
+```
 
 ## Video Demonstration
+Link Video: 
