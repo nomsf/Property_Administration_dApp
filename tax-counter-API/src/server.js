@@ -16,10 +16,10 @@ app.get('/', (req, res)=> {
 })
 
 // Route to calculate property tax (Pajak Bumi dan Bangunan)
-app.post('/tax_count', (req, res) => {
+app.post('/pbb_count', (req, res) => {
+  console.log("HITUNG PBB");
   const { luas_bangunan, luas_tanah, harga_bangunan, harga_tanah } = req.body;
   const isConvertible = !isNaN(Number(luas_bangunan)) && !isNaN(Number(luas_tanah)) && !isNaN(Number(harga_bangunan)) && !isNaN(Number(harga_tanah))
-  console.log(luas_bangunan, luas_tanah, harga_bangunan, harga_tanah);
 
   // Validate inputs
   if (!isConvertible) {
@@ -46,9 +46,9 @@ app.post('/tax_count', (req, res) => {
 
 // Route to calculate property value-added tax (Pajak Pertamabahan Nilai Properti)
 app.post('/ppn_count', (req, res) => {
+  console.log("HITUNG PPN");
   const { luas_bangunan, luas_tanah, harga_bangunan, harga_tanah } = req.body;
   const isConvertible = !isNaN(Number(luas_bangunan)) && !isNaN(Number(luas_tanah)) && !isNaN(Number(harga_bangunan)) && !isNaN(Number(harga_tanah));
-  console.log(luas_bangunan, luas_tanah, harga_bangunan, harga_tanah);
 
   // Validate inputs
   if (!isConvertible) {

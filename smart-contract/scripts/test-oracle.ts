@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function main() {
-    const ORACLE_ADDRESS = "0xDeeea509217cACA34A4f42ae76B046F263b06494";
+    const ORACLE_ADDRESS = "0x4952bE6a8033519456197bdf5B5a8a6189621F17";
     const [requester] = await ethers.getSigners();
     const Oracle = await ethers.getContractFactory("Oracle");
     const oracle = Oracle.attach(ORACLE_ADDRESS);
@@ -24,7 +24,7 @@ async function main() {
     const fee = await oracle.fee();
     
     // Create request transaction
-    const tx = await requesterOracle.requestTaxCalculation(
+    const tx = await requesterOracle.requestPPNCalculation(
         building_area,
         land_area,
         building_price_per_m2,

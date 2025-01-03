@@ -13,14 +13,14 @@ const jobHandlers: {
         land_price_per_m2: string
     ) => Promise<Number>
 } = {
-    "CALCULATE_PROPERTY_TAX": async (
+    "CALCULATE_PBB_TAX": async (
         building_area: string,
         land_area: string,
         building_price_per_m2: string,
         land_price_per_m2: string
     ): Promise<Number> => {
         try {
-            const response = await axios.post<TaxResponse>('http://localhost:3001/tax_count', {
+            const response = await axios.post<TaxResponse>('http://localhost:3001/pbb_count', {
                 luas_bangunan: building_area,
                 luas_tanah: land_area,
                 harga_bangunan: building_price_per_m2,
@@ -32,7 +32,27 @@ const jobHandlers: {
             console.error('Error calling Tax Counter API:', error);
             throw error;
         }
-    }
+    }, 
+    "CALCULATE_PPN_TAX": async (
+        building_area: string,
+        land_area: string,
+        building_price_per_m2: string,
+        land_price_per_m2: string
+    ): Promise<Number> => {
+        try {
+            const response = await axios.post<TaxResponse>('http://localhost:3001/ppn_count', {
+                luas_bangunan: building_area,
+                luas_tanah: land_area,
+                harga_bangunan: building_price_per_m2,
+                harga_tanah: land_price_per_m2
+            });
+            
+            return response.data.harga_akhir;
+        } catch (error) {
+            console.error('Error calling Tax Counter API:', error);
+            throw error;
+        }
+    }, 
 };
 
 async function runOracleNode(oracleAddress: string): Promise<void> {
@@ -54,6 +74,7 @@ async function runOracleNode(oracleAddress: string): Promise<void> {
         requestId: string,
         requester: string,
         jobId: string,
+        requestType: string,
         building_area: Number,
         land_area: Number,
         building_price_per_m2: Number,
@@ -70,7 +91,8 @@ async function runOracleNode(oracleAddress: string): Promise<void> {
         
         try {
             // Get result from API
-            const result = await jobHandlers["CALCULATE_PROPERTY_TAX"](
+            const job = (requestType === "pbb") ? "CALCULATE_PBB_TAX" : "CALCULATE_PPN_TAX";
+            const result = await jobHandlers[job](
                 building_area.toString(),
                 land_area.toString(),
                 building_price_per_m2.toString(),
