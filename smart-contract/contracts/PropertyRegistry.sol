@@ -7,65 +7,98 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract PropertyRegistry is ERC721, Ownable, ReentrancyGuard {
     struct Property {
+        uint256 price;
+        bool forSale;
         string name;
         string location;
-        uint256 price;
         string zoning;
-        bool forSale;
     }
 
     uint256 public nextPropertyId;
     mapping(uint256 => Property) public properties;
 
-    event PropertyRegistered(uint256 indexed propertyId, string name, string location, uint256 price, string zoning);
-    event PropertyTransferred(uint256 indexed propertyId, address indexed oldOwner, address indexed newOwner, uint256 price);
+    event PropertyRegistered(uint256 indexed propertyId, uint256 price, string name, string location, string zoning);
     event PropertyUpdated(uint256 indexed propertyId, string updatedField);
+    event PropertyAcquired(uint256 indexed propertyId, address indexed oldPropertyOwner, address indexed newPropertyOwner, uint256 price);
 
-    constructor(address initialOwner) ERC721("PropertyToken", "PT") Ownable(initialOwner) {
-        require(initialOwner != address(0), "Owner address cannot be zero");
+    string public constant TOKEN_NAME = "PropertyToken";
+    string public constant TOKEN_SYMBOL = "PT";
+
+    constructor(address contractOwner) ERC721(TOKEN_NAME, TOKEN_SYMBOL) Ownable(contractOwner) {
+        require(contractOwner != address(0), "Invalid contract owner address");
     }
 
-    function registerProperty(
-        string memory name,
-        string memory location,
-        uint256 price,
-        string memory zoning,
-        address propertyOwner
-    ) public onlyOwner {
-        require(propertyOwner != address(0), "Invalid property owner address");
+    function isPropertyOwner(uint256 propertyId, address account) public view returns (bool) {
+        return ownerOf(propertyId) == account;
+    }
 
-        uint256 propertyId = nextPropertyId++;
-        properties[propertyId] = Property(name, location, price, zoning, false);
+    function getPropertyForSale(uint256 propertyId) public view returns (bool) {
+        return properties[propertyId].forSale;
+    }
+
+    function registerProperty(address propertyOwner, uint256 price, string memory name, string memory location, string memory zoning) public onlyOwner {
+        require(propertyOwner != address(0), "Invalid property owner address");
+        require(price > 0, "Property price must be greater than zero");
+        require(bytes(name).length > 0, "Property name is required");
+        require(bytes(location).length > 0, "Property location is required");
+        require(bytes(zoning).length > 0, "Property zoning is required");
+
+        uint256 propertyId;
+        unchecked {
+            propertyId = nextPropertyId++;
+        }
+        properties[propertyId] = Property(price, false, name, location, zoning);
         _mint(propertyOwner, propertyId);
 
-        emit PropertyRegistered(propertyId, name, location, price, zoning);
+        emit PropertyRegistered(propertyId, price, name, location, zoning);
     }
 
-    function updatePropertyForSale(uint256 propertyId, bool isForSale) public {
+    function updatePropertyPrice(uint256 propertyId, uint256 newPrice) public {
         require(ownerOf(propertyId) != address(0), "Property does not exist");
-        require(ownerOf(propertyId) == msg.sender, "Only the property owner can update the sale status");
+        require(ownerOf(propertyId) == msg.sender, "Only property owner can update property price");
 
-        properties[propertyId].forSale = isForSale;
+        properties[propertyId].price = newPrice;
+
+        emit PropertyUpdated(propertyId, "price");
+    }
+
+    function updatePropertyForSale(uint256 propertyId, bool forSale) public {
+        require(ownerOf(propertyId) != address(0), "Property does not exist");
+        require(ownerOf(propertyId) == msg.sender, "Only property owner can update property for sale");
+        require(properties[propertyId].price > 0, "Property price must be greater than zero");
+
+        properties[propertyId].forSale = forSale;
 
         emit PropertyUpdated(propertyId, "forSale");
     }
 
-    function buyProperty(uint256 propertyId) public payable nonReentrant {
-        require(properties[propertyId].forSale, "Property is not for sale");
-        require(msg.value >= properties[propertyId].price, "Insufficient payment");
+    function updatePropertyName(uint256 propertyId, string memory newName) public {
+        require(ownerOf(propertyId) != address(0), "Property does not exist");
+        require(ownerOf(propertyId) == msg.sender, "Only property owner can update property name");
+        require(bytes(newName).length > 0, "Property name is required");
 
-        address oldOwner = ownerOf(propertyId);
-        address newOwner = msg.sender;
+        properties[propertyId].name = newName;
 
-        require(oldOwner != address(0), "Invalid property owner");
-        require(newOwner != oldOwner, "Buyer is already the owner");
+        emit PropertyUpdated(propertyId, "name");
+    }
 
-        _transfer(oldOwner, newOwner, propertyId);
+    function acquireProperty(uint256 propertyId) public payable nonReentrant {
+        Property storage property = properties[propertyId];
+        require(property.forSale, "Property is not for sale");
+        require(msg.value >= property.price, "Insufficient payment");
 
-        properties[propertyId].forSale = false;
+        address oldPropertyOwner = ownerOf(propertyId);
+        address newPropertyOwner = msg.sender;
 
-        payable(oldOwner).transfer(msg.value);
+        require(oldPropertyOwner != address(0), "Invalid property owner");
+        require(newPropertyOwner != oldPropertyOwner, "Buyer is already property owner");
 
-        emit PropertyTransferred(propertyId, oldOwner, newOwner, msg.value);
+        _transfer(oldPropertyOwner, newPropertyOwner, propertyId);
+        property.forSale = false;
+
+        (bool success, ) = oldPropertyOwner.call{value: msg.value}("");
+        require(success, "Payment transfer failed");
+
+        emit PropertyAcquired(propertyId, oldPropertyOwner, newPropertyOwner, msg.value);
     }
 }

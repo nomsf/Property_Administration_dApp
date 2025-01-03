@@ -31,7 +31,7 @@ npm install
 4. Gunakan command berikut untuk melakukan deployment Smart Contract.
 ```
 npx hardhat compile
-npx hardhat run scripts/deploy.ts --network local1
+npx hardhat run scripts/deploy-property-registry.ts --network local1
 ```
 5. Berikut contoh tampilan yang muncul jika Smart Contract berhasil dideploy.
 

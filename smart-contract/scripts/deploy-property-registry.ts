@@ -2,15 +2,15 @@ import { ethers } from "hardhat";
 
 async function main() {
     const [deployer] = await ethers.getSigners();
-    const initialOwner = deployer.address;
+    const contractOwner = deployer.address;
 
     const PropertyRegistry = await ethers.getContractFactory("PropertyRegistry");
-    const propertyRegistry = await PropertyRegistry.deploy(initialOwner);
+    const propertyRegistry = await PropertyRegistry.deploy(contractOwner);
 
     const contractAddress = await propertyRegistry.getAddress();
 
     console.log("PropertyRegistry deployed to:", contractAddress);
-    console.log("Contract owner:", initialOwner);
+    console.log("PropertyRegistry owner:", contractOwner);
 }
 
 main().catch((error) => {

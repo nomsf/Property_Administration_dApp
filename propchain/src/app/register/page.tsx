@@ -7,22 +7,22 @@ import { ethers } from "ethers";
 import PropertyRegistryABI from "../../../../smart-contract/artifacts/contracts/PropertyRegistry.sol/PropertyRegistry.json";
 import { toast } from "react-toastify";
 
-const CONTRACT_ADDRESS = "0x63e6DDE6763C3466C7b45Be880f7eE5dC2ca3E25";
+const CONTRACT_ADDRESS = "0x17435ccE3d1B4fA2e5f8A08eD921D57C6762A180";
 
 const RegisterPage = () => {
-  const [propertyName, setPropertyName] = useState("");
-  const [location, setLocation] = useState("");
-  const [price, setPrice] = useState(0);
+  const [name, setPropertyName] = useState("");
   const [zoning, setZoning] = useState("");
+  const [price, setPrice] = useState(0);
+  const [location, setLocation] = useState("");
   const [propertyOwner, setPropertyOwner] = useState("");
-  const [loading, setLoading] = useState(false);
   const [isGovernmentAccount, setIsGovernmentAccount] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setPropertyName(e.target.value);
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value);
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => setPrice(Number(e.target.value));
   const handleZoningChange = (e: React.ChangeEvent<HTMLInputElement>) => setZoning(e.target.value);
-  const handleOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => setPropertyOwner(e.target.value);
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => setPrice(Number(e.target.value));
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value);
+  const handlePropertyOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => setPropertyOwner(e.target.value);
 
   const initializeWallet = async () => {
     if (typeof window.ethereum === "undefined") {
@@ -36,8 +36,8 @@ const RegisterPage = () => {
       const address = await signer.getAddress();
 
       const contract = new ethers.Contract(CONTRACT_ADDRESS, PropertyRegistryABI.abi, signer);
-      const owner = await contract.owner();
-      setIsGovernmentAccount(address.toLowerCase() === owner.toLowerCase());
+      const contractOwner = await contract.owner();
+      setIsGovernmentAccount(address.toLowerCase() === contractOwner.toLowerCase());
     } catch (error) {
       console.error("Error initializing wallet:", error);
       toast.error("Error initializing wallet. Please check the console for more details.");
@@ -49,7 +49,7 @@ const RegisterPage = () => {
   }, []);
 
   const handleRegister = async () => {
-    if (!propertyName || !location || !price || !zoning || !propertyOwner) {
+    if (!name || !zoning || !price || !location || !propertyOwner) {
       toast.error("Please fill in all fields.");
       return;
     }
@@ -67,7 +67,7 @@ const RegisterPage = () => {
       const contract = new ethers.Contract(CONTRACT_ADDRESS, PropertyRegistryABI.abi, signer);
   
       const priceInWei = ethers.parseUnits(price.toString(), "ether");
-      const tx = await contract.registerProperty(propertyName, location, priceInWei, zoning, propertyOwner);
+      const tx = await contract.registerProperty(propertyOwner, priceInWei, name, location, zoning);
   
       const txHash = tx.hash;
       toast.info(`Transaction sent! Tx Hash: ${txHash}`);
@@ -123,7 +123,7 @@ const RegisterPage = () => {
             </FormControl>
             <FormControl sx={{ gridColumn: "1/-1" }}>
               <FormLabel>Owner Address</FormLabel>
-              <Input placeholder="Enter owner's wallet address" onChange={handleOwnerChange} />
+              <Input placeholder="Enter owner's wallet address" onChange={handlePropertyOwnerChange} />
             </FormControl>
             <CardActions sx={{ gridColumn: "1/-1" }}>
               <Button

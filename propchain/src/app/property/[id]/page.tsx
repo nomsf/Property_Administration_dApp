@@ -9,12 +9,13 @@ import { ethers } from "ethers";
 import PropertyRegistryABI from "../../../../../smart-contract/artifacts/contracts/PropertyRegistry.sol/PropertyRegistry.json";
 import { toast } from "react-toastify";
 
-const CONTRACT_ADDRESS = "0x63e6DDE6763C3466C7b45Be880f7eE5dC2ca3E25";
+const CONTRACT_ADDRESS = "0x17435ccE3d1B4fA2e5f8A08eD921D57C6762A180";
 
 const PropertyPage = () => {
     const { id } = useParams();
     const [property, setProperty] = useState<Property | null>(null);
-    const [currentAddress, setCurrentAddress] = useState<string>("");
+    const [isOwner, setIsOwner] = useState<boolean>(false);
+    const [forSale, setForSale] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -31,24 +32,23 @@ const PropertyPage = () => {
                 const signer = await provider.getSigner();
                 const contract = new ethers.Contract(CONTRACT_ADDRESS, PropertyRegistryABI.abi, signer);
 
-                const address = await signer.getAddress();
-                setCurrentAddress(address);
-
-                const propertyOwner = await contract.ownerOf(id);
                 const propertyData = await contract.properties(id);
                 const priceInEth = parseFloat(ethers.formatEther(propertyData.price));
-
                 const fetchedProperty = {
                     id: id.toString(),
                     name: propertyData.name,
+                    zoning: propertyData.zoning,
                     location: propertyData.location,
                     price: priceInEth,
-                    zoning: propertyData.zoning,
-                    forSale: propertyData.forSale,
-                    owner: propertyOwner,
                 };
 
+                const address = await signer.getAddress();
+                const isOwner = await contract.isPropertyOwner(id, address);
+                const forSale = await contract.getPropertyForSale(id);
+
                 setProperty(fetchedProperty);
+                setIsOwner(isOwner);
+                setForSale(forSale);
             } catch (error) {
                 console.error("Error fetching property:", error);
                 toast.error("Error fetching property. Please check the console for more details.");
@@ -60,7 +60,7 @@ const PropertyPage = () => {
         fetchProperty();
     }, [id]);
 
-    const buyProperty = async () => {
+    const acquireProperty = async () => {
         if (!property) return;
 
         try {
@@ -68,7 +68,7 @@ const PropertyPage = () => {
             const signer = await provider.getSigner();
             const contract = new ethers.Contract(CONTRACT_ADDRESS, PropertyRegistryABI.abi, signer);
 
-            const tx = await contract.buyProperty(property.id, {
+            const tx = await contract.acquireProperty(property.id, {
                 value: ethers.parseEther(property.price.toString()),
             });
 
@@ -91,14 +91,14 @@ const PropertyPage = () => {
             const signer = await provider.getSigner();
             const contract = new ethers.Contract(CONTRACT_ADDRESS, PropertyRegistryABI.abi, signer);
 
-            const tx = await contract.updatePropertyForSale(property.id, !property.forSale);
+            const tx = await contract.updatePropertyForSale(property.id, !forSale);
             const txHash = tx.hash;
             toast.info(`Transaction sent! Tx Hash: ${txHash}`);
 
             const receipt = await tx.wait();
             toast.success(`Property sale status updated successfully! Block: ${receipt.blockNumber}`);
 
-            setProperty({ ...property, forSale: !property.forSale });
+            setForSale(!forSale);
         } catch (error) {
             console.error("Error updating property sale status:", error);
             toast.error("Failed to update sale status. Please check the console for more details.");
@@ -130,8 +130,6 @@ const PropertyPage = () => {
             </Box>
         );
     }
-
-    const isOwner = currentAddress === property.owner;
 
     return (
         <Box sx={{ width: 1, height: 1 }}>
@@ -169,21 +167,16 @@ const PropertyPage = () => {
                             {property.location}
                         </Typography>
                     </Grid>
-                    <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                        <Typography level="title-lg" fontSize="xl" sx={{ textAlign: "start", color: "#ffffff" }}>
-                            Owner: {property.owner}
-                        </Typography>
-                    </Grid>
                     {isOwner ? (
                         <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                             <Button color="neutral" onClick={toggleForSale}>
-                                {property.forSale ? "Remove from Sale" : "Mark for Sale"}
+                                {forSale ? "Remove from Sale" : "Mark for Sale"}
                             </Button>
                         </Grid>
                     ) : (
-                        property.forSale && (
+                        forSale && (
                             <Grid xs={12} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                <Button color="neutral" onClick={buyProperty}>
+                                <Button color="neutral" onClick={acquireProperty}>
                                     Buy Property
                                 </Button>
                             </Grid>

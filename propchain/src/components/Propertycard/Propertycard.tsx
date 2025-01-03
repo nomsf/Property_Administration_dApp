@@ -2,7 +2,7 @@ import { Card, CardContent, CardOverflow, Divider, Typography } from "@mui/joy";
 import { PropertycardProps } from "./Propertycard.types";
 import { useRouter } from "next/navigation";
 
-const Propertycard: React.FC<PropertycardProps> = ({ id, name, location, price, zoning }) => {
+const Propertycard: React.FC<PropertycardProps> = ({ id, name, zoning, location, price }) => {
   const router = useRouter();
 
   const handleCardClick = () => {
