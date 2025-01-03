@@ -64,4 +64,4 @@ npm run dev
 ```
 
 ## Video Demonstration
-Link Video: 
+Link Video: https://youtu.be/wkv8Jk0ty84 
