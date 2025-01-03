@@ -51,7 +51,9 @@ npx hardhat run scripts/run-oracle-node.ts --network local1
 
 ![deploy oracle](images/deploy-oracle-smart-contract.png)
 
-4. Berikut contoh tampilan yang muncul jika Oracle Node berhasil dijalankan.
+4. Address dari oracle yang telah di deploy, dapat diganti pada source code `<root>/smart-contract/scripts/run-oracle-node.ts`.
+
+5. Berikut contoh tampilan yang muncul jika Oracle Node berhasil dijalankan.
 
 ![oracle node running](images/oracle-node-running.png)
 
